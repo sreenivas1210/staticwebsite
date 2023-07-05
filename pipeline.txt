@@ -1,0 +1,34 @@
+pipeline {
+  agent any
+  
+  stages {
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/sreenivas1210/staticweb.git'
+      }
+    }
+    
+    stage('Build') {
+      steps {
+        sh 'npm install'  // Or any other build commands specific to your static webpage
+      }
+    }
+    
+    stage('Deploy to S3') {
+      steps {
+        withAWS(credentials: '274253346253', region: 'us-east-1') {
+          sh 'aws s3 sync ./public s3://vasuui'  // Replace 'your-s3-bucket' with your S3 bucket name
+        }
+      }
+    }
+  }
+  
+  post {
+    success {
+      echo 'Deployment completed successfully!'
+    }
+    failure {
+      echo 'Deployment failed.'
+    }
+  }
+}
